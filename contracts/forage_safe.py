@@ -28,10 +28,11 @@ class ForageSafe(gl.Contract):
         self.next_id = u256(0)
 
     # ---- core AI logic ---------------------------------------------------
-    # A single non-deterministic block fetches an optional web reference and
-    # asks the LLM for a SAFETY-FIRST assessment. Validators reach consensus
-    # via the comparative equivalence principle: they must agree on the same
-    # risk category / species / confirmation, not on exact wording.
+    # `gather` (runs on the leader) fetches an optional web reference and
+    # assembles the specimen context. The non-comparative equivalence principle
+    # then has the leader produce the verdict while validators only check it
+    # satisfies the safety criteria — this reaches consensus even for ambiguous
+    # specimens, where forcing every validator to a byte-identical verdict fails.
     def _analyze(
         self,
         kind: str,
@@ -40,7 +41,7 @@ class ForageSafe(gl.Contract):
         habitat: str,
         location: str,
     ) -> str:
-        def analyze() -> str:
+        def gather() -> str:
             reference = ""
             guess = species_guess.strip()
             if guess:
@@ -52,52 +53,50 @@ class ForageSafe(gl.Contract):
                 except Exception:
                     reference = ""
 
-            prompt = f"""
-You are ForageSafe, an EXTREMELY cautious wild {kind} safety assistant.
-Assess the specimen below. Human safety is the only priority.
-
-CANDIDATE SPECIES (user guess, may be empty or wrong): {species_guess}
-OBSERVED FEATURES: {features}
-HABITAT: {habitat}
-LOCATION: {location}
-WEB REFERENCE (may be empty or unrelated, use only if relevant):
-{reference}
-
-Respond with ONLY strict minified JSON, no markdown, EXACTLY these keys:
-{{
-  "identified_species": string,
-  "confirmed": boolean,
-  "confidence": "low" | "medium" | "high",
-  "risk": "DEADLY_LOOKALIKE" | "TOXIC" | "SAFE_LOOKALIKE_EXISTS" | "LIKELY_HARMLESS" | "UNKNOWN",
-  "toxic_lookalikes": string[],
-  "key_features_to_check": string[],
-  "reason": string
-}}
-
-Hard rules:
-- NEVER state or imply the specimen is safe to eat or edible.
-- If the observed features cannot rule out a dangerous look-alike, set
-  "risk" to UNKNOWN or the strongest applicable warning and "confidence" to "low".
-- Always list known deadly/toxic look-alikes for the candidate when they exist.
-- Prefer caution over precision.
-Your output must be parseable by a strict JSON parser with no prefix or suffix.
-"""
-            result = (
-                gl.nondet.exec_prompt(prompt)
-                .replace("```json", "")
-                .replace("```", "")
-                .strip()
+            return (
+                f"KIND: {kind}\n"
+                f"CANDIDATE SPECIES (user guess, may be empty or wrong): {species_guess}\n"
+                f"OBSERVED FEATURES: {features}\n"
+                f"HABITAT: {habitat}\n"
+                f"LOCATION: {location}\n"
+                f"WEB REFERENCE (may be empty or unrelated, use only if relevant):\n"
+                f"{reference}\n"
             )
-            # normalise so equivalent verdicts serialise identically
-            return json.dumps(json.loads(result), sort_keys=True)
 
-        principle = (
-            "Two results are equivalent if they report the same 'risk' category, "
-            "the same 'confirmed' boolean, and refer to the same primary "
-            "identified species. Differences in wording, ordering of lists, or "
-            "the 'reason' text do not matter."
+        task = (
+            f"You are ForageSafe, an EXTREMELY cautious wild {kind} safety assistant. "
+            "Human safety is the only priority. Using the specimen data provided, "
+            "return ONLY strict minified JSON, no markdown, with EXACTLY these keys: "
+            '{"identified_species": string, "confirmed": boolean, '
+            '"confidence": "low"|"medium"|"high", '
+            '"risk": "DEADLY_LOOKALIKE"|"TOXIC"|"SAFE_LOOKALIKE_EXISTS"|"LIKELY_HARMLESS"|"UNKNOWN", '
+            '"toxic_lookalikes": string[], "key_features_to_check": string[], "reason": string}. '
+            "Rules: NEVER state or imply the specimen is safe to eat or edible. "
+            "If the observed features cannot rule out a dangerous look-alike, set "
+            "'risk' to UNKNOWN or the strongest applicable warning and 'confidence' to 'low'. "
+            "Always list known deadly/toxic look-alikes for the candidate when they exist. "
+            "Prefer caution over precision."
         )
-        return gl.eq_principle.prompt_comparative(analyze, principle)
+
+        criteria = (
+            "The response is strictly valid minified JSON containing exactly the keys "
+            "identified_species, confirmed, confidence, risk, toxic_lookalikes, "
+            "key_features_to_check and reason, with the correct value types. "
+            "The 'risk' value is one of DEADLY_LOOKALIKE, TOXIC, SAFE_LOOKALIKE_EXISTS, "
+            "LIKELY_HARMLESS or UNKNOWN. "
+            "The response NEVER claims the specimen is safe to eat or edible. "
+            "If a deadly or toxic look-alike is plausible, 'risk' is not LIKELY_HARMLESS."
+        )
+
+        result = gl.eq_principle.prompt_non_comparative(
+            gather, task=task, criteria=criteria
+        )
+        result = result.replace("```json", "").replace("```", "").strip()
+        # normalise; fall back to raw string if the model added stray text
+        try:
+            return json.dumps(json.loads(result), sort_keys=True)
+        except Exception:
+            return result
 
     # ---- public write ----------------------------------------------------
     @gl.public.write

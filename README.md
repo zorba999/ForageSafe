@@ -39,7 +39,7 @@ forage-safe/
 ## Deployed contract
 
 - Network: **GenLayer Bradbury** (chainId `4221`, RPC `https://rpc-bradbury.genlayer.com`)
-- Address: `0x4bc28A9330F6F9929D151Cc0683B5799D3495687`
+- Address: `0x1486bBca2107765AB79241ce7785CFe95E564825`
 - Explorer: https://explorer-bradbury.genlayer.com/
 
 ## Develop / deploy the contract

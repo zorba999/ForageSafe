@@ -70,11 +70,15 @@
           :disabled="submitting || !canSubmit"
           @click="submit"
         >
-          {{ submitting ? "Analyzing on-chain… (~30–90s)" : "Analyze specimen" }}
+          {{ submitting ? progress : "Analyze specimen" }}
         </button>
         <button v-else class="btn primary full" @click="connect">
           Connect wallet to analyze
         </button>
+        <p v-if="submitting" class="muted small">
+          Validators are running the LLM, reading the web and reaching consensus.
+          This can take a few minutes on testnet — you can leave this tab open.
+        </p>
         <p v-if="!hasWalletExt" class="muted small">
           No EVM wallet detected. Install <a class="link" href="https://metamask.io" target="_blank" rel="noopener">MetaMask</a> to submit checks.
         </p>
@@ -149,6 +153,7 @@ const hasWalletExt = ref(hasWallet());
 const reports = ref([]);
 const loading = ref(false);
 const submitting = ref(false);
+const progress = ref("Analyzing…");
 const error = ref("");
 
 const form = reactive({
@@ -216,8 +221,12 @@ const submit = async () => {
   error.value = "";
   if (!canSubmit.value) return;
   submitting.value = true;
+  progress.value = "Waiting for wallet signature…";
   try {
-    await forage.identify({ ...form });
+    await forage.identify({ ...form }, (status) => {
+      if (status === "signing") progress.value = "Waiting for wallet signature…";
+      else if (status === "pending") progress.value = "Submitted — awaiting consensus…";
+    });
     form.features = "";
     form.speciesGuess = "";
     form.photoRef = "";
@@ -226,10 +235,12 @@ const submit = async () => {
     console.error(e);
     const msg = e?.message || "";
     error.value =
-      /insufficient|balance/i.test(msg)
+      /insufficient|balance|funds/i.test(msg)
         ? "Not enough testnet GEN. Use the Faucet link to fund your wallet."
-        : /rejected|denied/i.test(msg)
+        : /rejected|denied|User rejected/i.test(msg)
         ? "Transaction rejected in wallet."
+        : /TIMEOUT/.test(msg)
+        ? "Still processing on-chain. It may appear shortly — hit Refresh in a minute."
         : "Something went wrong submitting the transaction.";
   } finally {
     submitting.value = false;
