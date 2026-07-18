@@ -120,7 +120,7 @@
             <span>confidence: {{ r.verdict.confidence || '—' }}</span>
             <span>by {{ short(r.submitter) }}</span>
           </div>
-          <p class="disclaimer">{{ r.verdict.disclaimer }}</p>
+          <p class="disclaimer">{{ r.disclaimer || defaultDisclaimer }}</p>
         </div>
       </section>
     </main>
@@ -147,6 +147,8 @@ import {
 
 const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
 const forage = new ForageSafe(contractAddress);
+const defaultDisclaimer =
+  "Educational estimate only. NEVER eat a wild mushroom or plant based on this result. Always confirm with a qualified local expert.";
 
 const address = ref("");
 const hasWalletExt = ref(hasWallet());
