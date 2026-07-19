@@ -81,7 +81,7 @@ export default class ForageSafe {
 }
 
 // genlayer-js decodes GenVM dicts/structs as Map when non-empty but as a
-// plain object when empty — normalise both to [key, value] pairs.
+// plain object when empty, so normalise both to [key, value] pairs.
 function entriesOf(x) {
   if (x instanceof Map) return Array.from(x.entries());
   if (x && typeof x === "object") return Object.entries(x);

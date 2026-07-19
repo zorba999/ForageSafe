@@ -70,7 +70,7 @@ export function onWalletChange(cb) {
   };
 }
 
-// Read-only client (browsing past checks — no wallet required).
+// Read-only client (browsing past checks, no wallet required).
 export const makeReadClient = () => createClient({ chain });
 
 // Write client bound to the connected wallet; writeContract triggers a signature.

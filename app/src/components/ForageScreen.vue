@@ -61,7 +61,7 @@
           <span data-hero-line style="display:block;">Beautiful,</span>
           <span data-hero-line style="display:block;">but <em style="color:var(--em);font-style:italic;">never</em> reckless.</span>
         </h1>
-        <p data-hero-line style="max-width:52ch;font-size:clamp(1rem,1.6vw,1.2rem);line-height:1.65;color:var(--muted);margin:0 0 42px;text-wrap:pretty;">Describe what you found — cap, gills, stem, smell, habitat — and ForageSafe returns a careful safety verdict, reasoned by decentralized AI validators and recorded on GenLayer: the risk, the toxic look-alikes, and exactly what to verify. It will warn you. It will never clear you.</p>
+        <p data-hero-line style="max-width:52ch;font-size:clamp(1rem,1.6vw,1.2rem);line-height:1.65;color:var(--muted);margin:0 0 42px;text-wrap:pretty;">Describe what you found: cap, gills, stem, smell, habitat. ForageSafe returns a careful safety verdict, reasoned by decentralized AI validators and recorded on GenLayer: the risk, the toxic look-alikes, and exactly what to verify. It will warn you. It will never clear you.</p>
         <div data-hero-line style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
           <button @click="scrollTo('check')" class="fs-cta" style="font:inherit;font-weight:700;font-size:15px;letter-spacing:.03em;padding:16px 32px;border-radius:999px;border:none;cursor:pointer;color:#0C130D;background:linear-gradient(120deg,var(--glow),var(--em));box-shadow:0 8px 30px var(--heroGlow);">Begin a field check</button>
           <a href="#log" class="fs-link-underline" style="font-weight:600;font-size:14px;letter-spacing:.03em;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:2px;">Browse the field log →</a>
@@ -101,7 +101,7 @@
             </label>
           </div>
           <label style="display:block;margin-bottom:26px;">
-            <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;">FIELD NOTES — WHAT DO YOU SEE, SMELL, FEEL?</span>
+            <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;">FIELD NOTES: WHAT DO YOU SEE, SMELL, FEEL?</span>
             <textarea v-model="form.desc" rows="4" placeholder="Egg-yolk yellow, trumpet-shaped cap · blunt forked ridges under the cap running down the stem · smells faintly of apricot · growing scattered from soil under oaks…" style="width:100%;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.6;color:var(--ink);background:var(--inputbg);border:1px solid var(--line);border-radius:14px;padding:16px;resize:vertical;transition:border-color .25s ease;"></textarea>
           </label>
           <label style="display:block;margin-bottom:34px;">
@@ -156,7 +156,7 @@
                 </div>
               </div>
               <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);">CONFIDENCE</span>
-              <span style="font-size:11.5px;color:var(--muted);max-width:180px;text-align:center;line-height:1.5;">Reflects description completeness — never edibility.</span>
+              <span style="font-size:11.5px;color:var(--muted);max-width:180px;text-align:center;line-height:1.5;">Reflects description completeness, never edibility.</span>
             </div>
           </div>
         </div>
@@ -171,7 +171,7 @@
                 </div>
                 <p v-if="la.note" style="font-size:14px;line-height:1.65;color:var(--muted);margin:0;">{{ la.note }}</p>
               </div>
-              <p v-if="!v.lookalikes.length" style="font-size:14px;color:var(--muted);margin:0;">No specific toxic look-alikes were flagged — that is never a clearance. Verify every feature below.</p>
+              <p v-if="!v.lookalikes.length" style="font-size:14px;color:var(--muted);margin:0;">No specific toxic look-alikes were flagged. That is never a clearance. Verify every feature below.</p>
             </div>
           </div>
           <div>
@@ -185,7 +185,7 @@
                   <span v-if="c.detail" style="display:block;font-size:13.5px;line-height:1.6;color:var(--muted);margin-top:4px;">{{ c.detail }}</span>
                 </span>
               </button>
-              <p data-stagger style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:8px 2px 0;line-height:1.7;">{{ checkedCount }} of {{ v.checklist.length }} verified in the field. A checked box is your observation — not ForageSafe's blessing.</p>
+              <p data-stagger style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:8px 2px 0;line-height:1.7;">{{ checkedCount }} of {{ v.checklist.length }} verified in the field. A checked box is your observation, not ForageSafe's blessing.</p>
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@
 
     <div style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--navbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:10px;">
       <span style="width:6px;height:6px;border-radius:50%;background:#D6493A;animation:fsPulse 2.4s ease-in-out infinite;flex:0 0 auto;"></span>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);margin:0;text-align:center;">ForageSafe is a caution engine, not a permission engine. It will never tell you something is safe to eat. When in doubt — throw it out.</p>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);margin:0;text-align:center;">ForageSafe is a caution engine, not a permission engine. It will never tell you something is safe to eat. When in doubt, throw it out.</p>
     </div>
   </div>
 </template>
@@ -363,7 +363,7 @@ function mapVerdict(report) {
   const conf = CONF_TO_NUM[String(d.confidence).toLowerCase()] ?? 40;
   return {
     name: d.identified_species || report.species_guess || "Unidentified specimen",
-    latin: d.identified_species || "—",
+    latin: d.identified_species || "unidentified",
     level,
     confidence: conf,
     summary: d.reason || "The description was too sparse for a responsible identification.",
@@ -380,7 +380,7 @@ function mapFeed(reports) {
     return {
       key: r.key ?? r.id,
       name: d.identified_species || r.species_guess || "Unidentified",
-      latin: d.identified_species || "—",
+      latin: d.identified_species || "unidentified",
       type: r.kind === "mushroom" ? "Mushroom" : "Plant",
       typeUpper: (r.kind || "").toUpperCase(),
       color: scale.color,
@@ -427,7 +427,7 @@ const analyze = async () => {
   try {
     await forage.identify(
       { kind, speciesGuess: form.species, features, habitat: form.habitat, location: form.location },
-      (status) => { progress.value = status === "pending" ? "Submitted — validators reaching consensus…" : "Waiting for wallet signature…"; }
+      (status) => { progress.value = status === "pending" ? "Submitted. Validators reaching consensus…" : "Waiting for wallet signature…"; }
     );
     const reports = await forage.getReports();
     feed.value = mapFeed(reports);
@@ -444,7 +444,7 @@ const analyze = async () => {
     error.value = /insufficient|balance|funds/i.test(msg)
       ? "Not enough testnet GEN. Use the faucet link to fund your wallet."
       : /reject|denied/i.test(msg) ? "Transaction rejected in wallet."
-      : /TIMEOUT/.test(msg) ? "Still processing on-chain — hit Refresh in a minute; it will appear in the field log."
+      : /TIMEOUT/.test(msg) ? "Still processing on-chain. Hit Refresh in a minute; it will appear in the field log."
       : "Something went wrong submitting the transaction.";
   } finally {
     analyzing.value = false;
