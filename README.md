@@ -1,91 +1,93 @@
-# 🍄 ForageSafe
+# ForageSafe
 
-**Cautious AI safety checks for wild mushrooms & plants — verified on GenLayer.**
+A cautious AI companion for wild foragers, built on GenLayer.
 
-ForageSafe is a decentralized app on the **GenLayer Bradbury testnet**. A user
-describes a specimen (features, habitat, an optional species guess); an
-**Intelligent Contract** grounds the guess with a live web lookup, asks an LLM
-for a **safety-first risk assessment**, and multiple validators reach
-**consensus** on the verdict via GenLayer's comparative equivalence principle.
-Every check is stored immutably on-chain.
+Describe a wild mushroom or plant (cap, gills, stem, smell, habitat, an optional
+species guess) and ForageSafe returns a safety verdict: a risk level, the toxic
+look-alikes that could be confused with it, and the exact features to verify. It
+is a caution engine, not a permission engine. It never tells you something is
+safe to eat.
 
-> ⚠️ **Safety first.** This is an educational tool. It never tells you something
-> is safe to eat, and it always warns about toxic look-alikes. AI can be wrong —
-> never eat a wild mushroom or plant based on this app. Confirm with a qualified
-> local expert.
+> Educational tool only. Never eat a wild mushroom or plant based on this app.
+> Always confirm with a qualified local expert.
 
-## Why GenLayer (and not a plain web app)?
+## How it works
 
-- **Web access without oracles** — the contract reads reference data straight
-  from the internet (`gl.get_webpage`).
-- **Natural-language judgment** — the LLM interprets unstructured field notes.
-- **Consensus on a subjective verdict** — several validators must agree on the
-  same risk category, so no single hallucinating model decides. That is exactly
-  GenLayer's adjudication niche, and the reason this belongs on-chain.
+The verdict is produced by an Intelligent Contract on the GenLayer Bradbury
+testnet. On each check the contract:
 
-## Project layout
+1. Fetches a live web reference for the species guess.
+2. Asks an LLM for a safety-first risk assessment.
+3. Reaches consensus across validators using the non-comparative equivalence
+   principle, so no single model decides the outcome.
+4. Stores the verdict on-chain.
 
-```
-forage-safe/
-├─ contracts/forage_safe.py   # the Intelligent Contract
-├─ deploy/deployScript.ts     # optional script-based deploy
-├─ app/                       # Vue 3 + Vite frontend (deploys to Vercel)
-│  ├─ src/services/genlayer.js  # client + account (testnetBradbury)
-│  ├─ src/logic/ForageSafe.js   # contract read/write wrapper
-│  └─ src/components/ForageScreen.vue
-└─ README.md
-```
+This is why the app lives on GenLayer rather than a plain backend: web access
+without oracles, natural-language judgment, and decentralized consensus on a
+subjective safety call.
 
 ## Deployed contract
 
-- Network: **GenLayer Bradbury** (chainId `4221`, RPC `https://rpc-bradbury.genlayer.com`)
-- Address: `0xcd5B8C06C8EF7b8817118D4297d2513b2c4783d8`
-- Explorer: https://explorer-bradbury.genlayer.com/
+| | |
+|---|---|
+| Network | GenLayer Bradbury testnet (chain id 4221) |
+| RPC | https://rpc-bradbury.genlayer.com |
+| Contract | `0xcd5B8C06C8EF7b8817118D4297d2513b2c4783d8` |
+| Explorer | https://explorer-bradbury.genlayer.com |
 
-## Develop / deploy the contract
+## Tech stack
 
-```bash
-# from forage-safe/
-npx genlayer network set testnet-bradbury
-npx genlayer account import --private-key 0x... --name my-burner
-npx genlayer account unlock --account my-burner
-npx genlayer deploy --contract contracts/forage_safe.py
+- Intelligent Contract: Python (GenLayer GenVM)
+- Frontend: Vue 3, Vite, GSAP
+- Chain access: genlayer-js, injected EVM wallet (MetaMask)
+
+## Project structure
+
+```
+forage-safe/
+  contracts/forage_safe.py        Intelligent Contract
+  deploy/deployScript.ts          Script-based deploy
+  app/                            Vue + Vite frontend
+    src/services/genlayer.js      Wallet adapter and client
+    src/logic/ForageSafe.js       Contract read/write wrapper
+    src/components/ForageScreen.vue
 ```
 
 ## Run the frontend
 
 ```bash
 cd app
-cp .env.example .env        # set VITE_CONTRACT_ADDRESS
+cp .env.example .env      # sets VITE_CONTRACT_ADDRESS
 npm install
-npm run dev                 # http://localhost:5173
+npm run dev               # http://localhost:5173
 ```
 
-To submit a check, click **Connect wallet** (MetaMask or any injected EVM
-wallet). The app adds/switches the wallet to the Bradbury network automatically;
-fund it from the [faucet](https://testnet-faucet.genlayer.foundation/). Browsing
-past checks is free and needs no wallet.
+Browsing past checks is free and needs no wallet. To submit a check, connect an
+EVM wallet; the app adds the Bradbury network automatically. Fund the wallet from
+the [faucet](https://testnet-faucet.genlayer.foundation/). Consensus can take a
+few minutes, after which the verdict appears in the field log.
+
+## Deploy the contract
+
+```bash
+npx genlayer network set testnet-bradbury
+npx genlayer account import --private-key 0x... --name my-wallet
+npx genlayer account unlock --account my-wallet
+npx genlayer deploy --contract contracts/forage_safe.py
+```
 
 ## Deploy to Vercel
 
-The frontend is a static Vite build.
-
-```bash
-cd app
-npm i -g vercel
-vercel            # link + deploy (set VITE_CONTRACT_ADDRESS in project env)
-vercel --prod
-```
-
-`app/vercel.json` already sets the Vite framework preset and SPA rewrites. Set
-`VITE_CONTRACT_ADDRESS` in the Vercel project's Environment Variables.
+The frontend is a static Vite build. Import the repository in Vercel, set the
+root directory to `app`, and add the environment variable
+`VITE_CONTRACT_ADDRESS`. The included `app/vercel.json` sets the framework preset
+and SPA rewrites.
 
 ## Security
 
-- The deployer key lives only in the OS keychain (`genlayer account`) and in a
-  git-ignored `.env` — never committed and never shipped to Vercel.
-- The frontend needs **no** private key baked in; each user connects their own
-  EVM wallet (MetaMask, Rabby, …) and signs transactions there.
+No private key is committed or shipped to the frontend. Each user connects their
+own wallet and signs transactions locally. The deployer key stays in the OS
+keychain and in a git-ignored `.env`.
 
 ## License
 
