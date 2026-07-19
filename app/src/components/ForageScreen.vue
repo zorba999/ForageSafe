@@ -97,7 +97,7 @@
             </label>
             <label style="display:block;">
               <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px;">LOCATION · REGION</span>
-              <input v-model="form.location" type="text" placeholder="e.g. Middle Atlas, Morocco" style="width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:var(--ink);background:var(--inputbg);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .25s ease;">
+              <input v-model="form.location" type="text" placeholder="e.g. Appalachian foothills, NC" style="width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:var(--ink);background:var(--inputbg);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .25s ease;">
             </label>
           </div>
           <label style="display:block;margin-bottom:26px;">
