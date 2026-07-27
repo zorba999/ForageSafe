@@ -274,7 +274,7 @@ const defaultDisclaimer =
   "Educational estimate only. NEVER eat a wild mushroom or plant based on this result. Always confirm with a qualified local expert.";
 
 const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
-const contractUrl = explorerBase + "contracts/" + contractAddress;
+const contractUrl = explorerBase + "address/" + contractAddress;
 const forage = new ForageSafe(contractAddress);
 
 const types = [
