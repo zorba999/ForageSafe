@@ -28,11 +28,17 @@ against the Wikipedia REST summary API. Both are independent of the user's input
 and of each other.
 
 **3. The verdict is formed only from that evidence,** and must cite which records
-it relied on. Validators then judge the verdict with the non-comparative
-equivalence principle against substantive criteria: whether the named species is
-supported by the cited records, whether the toxicity classification is factually
-correct for that taxon, and whether the risk level is understated. A verdict that
-is merely worded cautiously but factually wrong is rejected.
+it relied on. Validators then judge it with the non-comparative equivalence
+principle against factual criteria rather than tone: a verdict is rejected if the
+evidence is empty while a species or a non-unknown risk is still asserted, if the
+toxicity classification is wrong for the species named (a taxon with lethal
+members classified as harmless), or if it implies the specimen is edible. A
+verdict that is merely worded cautiously but factually wrong does not pass.
+
+The criteria are deliberately limited to claims that are objectively checkable.
+Completeness judgements, such as whether a look-alike list is exhaustive, are left
+to the deterministic layer below, because they vary between validators and stall
+consensus without adding safety.
 
 **4. Deterministic guards run before anything is stored.** Independently of the
 model, contract code enforces:
@@ -61,7 +67,7 @@ decentralized consensus on a subjective, safety-critical verdict.
 |---|---|
 | Network | GenLayer Bradbury testnet (chain id 4221) |
 | RPC | https://rpc-bradbury.genlayer.com |
-| Contract | `0xb990714B84607255607D4F16AEe673838A6F3B5a` |
+| Contract | `0x20Cb2355F8f1a417529FCE96DD9ad086Ed73B832` |
 | Explorer | https://explorer-bradbury.genlayer.com |
 
 ## Tech stack

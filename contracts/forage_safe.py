@@ -271,7 +271,7 @@ class ForageSafe(gl.Contract):
                     )
                     wj = json.loads(w.body.decode("utf-8", errors="ignore"))
                     if isinstance(wj, dict):
-                        summary = str(wj.get("extract") or "")[:900]
+                        summary = str(wj.get("extract") or "")[:500]
                 except Exception:
                     summary = ""
 
@@ -353,25 +353,24 @@ class ForageSafe(gl.Contract):
             "and Wikipedia), and return a safety verdict as JSON with the evidence used."
         )
 
+        # Judge substance, but only on claims that are objectively checkable, so
+        # validators converge. Completeness judgements are deliberately left out
+        # and handled by the deterministic layer below instead.
         criteria = (
-            "Judge the SUBSTANCE of the result, not its tone. Accept it only if ALL hold:\n"
-            "1. The response is JSON containing 'grounded', 'evidence' and 'verdict'.\n"
-            "2. Every species named in the verdict is taxonomically plausible and is "
-            "supported by, or at least not contradicted by, the evidence entries included "
-            "in the response.\n"
-            "3. The toxicity classification is factually correct for the species named. "
-            "Any species belonging to a genus with lethal or severely toxic members "
-            "(for example Amanita, Galerina, Cortinarius, Lepiota, Gyromitra, Conium, "
-            "Cicuta, Atropa, Nerium, Digitalis, Aconitum, Taxus, Convallaria) must be "
-            "classified as TOXIC or DEADLY_LOOKALIKE, never LIKELY_HARMLESS.\n"
-            "4. The risk level is not understated relative to the evidence. When the "
-            "observed features cannot rule out a dangerous species, the risk must be "
-            "DEADLY_LOOKALIKE or UNKNOWN rather than a lower level.\n"
-            "5. Known toxic look-alikes for the named species are present in "
-            "'toxic_lookalikes' when the evidence indicates they exist.\n"
-            "6. The response never states or implies the specimen is safe to eat.\n"
-            "Reject the result if it names a species the evidence contradicts, "
-            "understates toxicity, or omits an obvious deadly look-alike."
+            "Judge the factual substance of the result, not its tone or style.\n"
+            "REJECT the result if ANY of the following is true:\n"
+            "1. It is not JSON containing 'grounded', 'evidence' and 'verdict'.\n"
+            "2. 'evidence' is empty, yet the verdict still names a species or gives a "
+            "risk other than UNKNOWN.\n"
+            "3. The toxicity classification is factually wrong for the species named. "
+            "In particular, any species in a genus with lethal or severely toxic "
+            "members (Amanita, Galerina, Cortinarius, Lepiota, Conocybe, Gyromitra, "
+            "Inocybe, Clitocybe, Omphalotus, Conium, Cicuta, Atropa, Nerium, Digitalis, "
+            "Aconitum, Taxus, Convallaria, Datura, Ricinus) must NOT be classified as "
+            "LIKELY_HARMLESS or SAFE_LOOKALIKE_EXISTS.\n"
+            "4. It states or implies the specimen is safe to eat or edible.\n"
+            "Otherwise ACCEPT. Do not reject over wording, formatting, ordering, or "
+            "because you would personally have listed additional look-alikes."
         )
 
         raw = gl.eq_principle.prompt_non_comparative(
