@@ -189,6 +189,30 @@
             </div>
           </div>
         </div>
+        <div data-stagger style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:26px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+            <h3 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:22px;margin:0;">Evidence this verdict is built on</h3>
+            <span :style="`font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;border-radius:99px;padding:4px 10px;border:1px solid ${v.grounded ? 'var(--em)' : '#D6493A'};color:${v.grounded ? 'var(--em)' : '#D6493A'};`">
+              {{ v.grounded ? 'GROUNDED' : 'NOT GROUNDED' }}
+            </span>
+          </div>
+          <p v-if="!v.grounded" style="font-size:14px;line-height:1.6;color:var(--muted);margin:0;">
+            No authoritative record resolved for this specimen, so the contract refuses to assert an identification and reports it as unknown.
+          </p>
+          <template v-else>
+            <div v-for="(t,i) in v.taxa" :key="i" style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line);">
+              <span style="font-weight:700;font-size:14.5px;">{{ t.scientificName || t.name }}</span>
+              <span v-if="t.family" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);">{{ t.family }}</span>
+              <span style="margin-left:auto;display:flex;gap:6px;">
+                <span v-if="t.matched" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 8px;">GBIF</span>
+                <span v-if="t.hasSummary" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 8px;">WIKIPEDIA</span>
+              </span>
+            </div>
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:14px 0 0;line-height:1.7;">
+              Candidates are derived from the observed features, not from your guess, then checked against independent records before any verdict is formed.
+            </p>
+          </template>
+        </div>
         <p style="font-size:11.5px;color:var(--muted);font-style:italic;margin:22px 2px 0;">{{ v.disclaimer }}</p>
       </section>
 
@@ -346,6 +370,9 @@ const v = computed(() => {
     level: sv.level,
     lookalikes: sv.lookalikes,
     checklist: sv.checklist,
+    sources: sv.sources || [],
+    grounded: sv.grounded,
+    taxa: sv.taxa || [],
   };
 });
 const checkedCount = computed(() => Object.values(checked).filter(Boolean).length);
@@ -370,7 +397,29 @@ function mapVerdict(report) {
     disclaimer: report.disclaimer || defaultDisclaimer,
     lookalikes: (d.toxic_lookalikes || []).map(parseLookalike),
     checklist: (d.key_features_to_check || []).map((t) => ({ title: t, detail: "" })),
+    sources: d.sources_used || [],
+    grounded: report.grounded === true,
+    taxa: parseEvidence(report.evidence_json),
   };
+}
+
+// The evidence block records which authoritative records the verdict was
+// actually built on, so the grounding is visible rather than implied.
+function parseEvidence(raw) {
+  try {
+    const ev = JSON.parse(raw || "[]");
+    if (!Array.isArray(ev)) return [];
+    return ev.map((e) => ({
+      name: e.name || "",
+      scientificName: e.taxon?.scientificName || "",
+      family: e.taxon?.family || "",
+      status: e.taxon?.status || "",
+      matched: !!e.taxon,
+      hasSummary: !!e.summary,
+    }));
+  } catch (_) {
+    return [];
+  }
 }
 function mapFeed(reports) {
   return reports.map((r) => {
@@ -417,7 +466,7 @@ const refresh = async () => {
 const analyze = async () => {
   error.value = "";
   if (!address.value) return connect();
-  if (form.desc.trim().length < 8) { error.value = "Add a few more field notes first."; return; }
+  if (form.desc.trim().length < 12) { error.value = "Describe the specimen in a bit more detail first."; return; }
 
   analyzing.value = true;
   progress.value = "Waiting for wallet signature…";

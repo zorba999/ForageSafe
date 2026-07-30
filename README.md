@@ -14,17 +14,46 @@ safe to eat.
 ## How it works
 
 The verdict is produced by an Intelligent Contract on the GenLayer Bradbury
-testnet. On each check the contract:
+testnet, in four stages.
 
-1. Fetches a live web reference for the species guess.
-2. Asks an LLM for a safety-first risk assessment.
-3. Reaches consensus across validators using the non-comparative equivalence
-   principle, so no single model decides the outcome.
-4. Stores the verdict on-chain.
+**1. Candidates come from the features, not from the guess.** The contract first
+derives candidate species from the observed features alone. The user's species
+guess is carried through as an explicitly untrusted hypothesis, so a wrong guess
+cannot be used as evidence for itself.
+
+**2. Every candidate is grounded in independent authoritative sources.** Each
+candidate is resolved against the [GBIF](https://www.gbif.org) taxonomic backbone
+(accepted name, rank, family, genus, and whether the name resolves at all) and
+against the Wikipedia REST summary API. Both are independent of the user's input
+and of each other.
+
+**3. The verdict is formed only from that evidence,** and must cite which records
+it relied on. Validators then judge the verdict with the non-comparative
+equivalence principle against substantive criteria: whether the named species is
+supported by the cited records, whether the toxicity classification is factually
+correct for that taxon, and whether the risk level is understated. A verdict that
+is merely worded cautiously but factually wrong is rejected.
+
+**4. Deterministic guards run before anything is stored.** Independently of the
+model, contract code enforces:
+
+- An ungrounded result cannot assert a species, a low risk, or high confidence.
+  It is stored as `UNKNOWN`.
+- A registry of taxa with lethal or severely toxic members (Amanita, Galerina,
+  Cortinarius, Lepiota, Gyromitra, Conium, Cicuta, Atropa, Nerium, Digitalis,
+  Aconitum, Taxus, Convallaria and others) floors the risk at `DEADLY_LOOKALIKE`
+  whenever such a taxon appears in the identification or the look-alike list.
+- A verdict that lists toxic look-alikes cannot also be `LIKELY_HARMLESS`.
+- Any phrasing that implies edibility is stripped.
+- Malformed or unparseable model output degrades to `UNKNOWN`, never to a
+  reassuring result.
+
+Each report stores the verdict, the evidence actually consulted, and a `grounded`
+flag, so the basis for any result can be inspected on-chain.
 
 This is why the app lives on GenLayer rather than a plain backend: web access
-without oracles, natural-language judgment, and decentralized consensus on a
-subjective safety call.
+without oracles, natural-language judgment over unstructured field notes, and
+decentralized consensus on a subjective, safety-critical verdict.
 
 ## Deployed contract
 
@@ -32,7 +61,7 @@ subjective safety call.
 |---|---|
 | Network | GenLayer Bradbury testnet (chain id 4221) |
 | RPC | https://rpc-bradbury.genlayer.com |
-| Contract | `0xcd5B8C06C8EF7b8817118D4297d2513b2c4783d8` |
+| Contract | `0xb990714B84607255607D4F16AEe673838A6F3B5a` |
 | Explorer | https://explorer-bradbury.genlayer.com |
 
 ## Tech stack

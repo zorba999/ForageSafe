@@ -48,7 +48,7 @@ export default class ForageSafe {
   // consensus. Rather than block on the receipt with no feedback, we submit,
   // then poll on-chain state until the new report is stored.
   async identify(
-    { kind, speciesGuess, features, habitat, location, photoRef },
+    { kind, speciesGuess, features, habitat, location },
     onStatus = () => {}
   ) {
     if (!this.walletAddress) throw new Error("NO_WALLET");
@@ -60,14 +60,7 @@ export default class ForageSafe {
     const txHash = await client.writeContract({
       address: this.contractAddress,
       functionName: "identify",
-      args: [
-        kind,
-        speciesGuess || "",
-        features,
-        habitat || "",
-        location || "",
-        photoRef || "",
-      ],
+      args: [kind, speciesGuess || "", features, habitat || "", location || ""],
     });
 
     onStatus("pending", txHash);
