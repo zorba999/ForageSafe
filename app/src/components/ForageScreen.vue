@@ -119,6 +119,10 @@
             </span>
             <span v-else style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);opacity:.8;">Sparse notes → verdict defaults to UNKNOWN.</span>
           </div>
+          <p v-if="analyzing" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:14px 0 0;line-height:1.7;">
+            Candidates are checked against GBIF and Wikipedia, then validators vote on the verdict. On testnet this takes from a minute to well over ten. You can leave this tab open.
+            <a v-if="pendingTx" :href="explorerBase + 'tx/' + pendingTx" target="_blank" rel="noopener" class="link">Follow it in the explorer</a>
+          </p>
           <p v-if="error" style="color:#D6493A;font-size:13px;margin:16px 0 0;">{{ error }}</p>
         </div>
       </section>
@@ -312,6 +316,7 @@ const type = ref("mushroom");
 const address = ref("");
 const analyzing = ref(false);
 const progress = ref("");
+const pendingTx = ref("");
 const error = ref("");
 const loading = ref(false);
 const verdict = ref(null);      // mapped verdict object
@@ -476,8 +481,16 @@ const analyze = async () => {
   try {
     await forage.identify(
       { kind, speciesGuess: form.species, features, habitat: form.habitat, location: form.location },
-      (status) => { progress.value = status === "pending" ? "Submitted. Validators reaching consensus…" : "Waiting for wallet signature…"; }
+      (status, txHash) => {
+        if (status === "pending") {
+          progress.value = "Submitted. Validators reaching consensus…";
+          pendingTx.value = txHash || "";
+        } else {
+          progress.value = "Waiting for wallet signature…";
+        }
+      }
     );
+    pendingTx.value = "";
     const reports = await forage.getReports();
     feed.value = mapFeed(reports);
     const newest = reports[0];
@@ -493,10 +506,11 @@ const analyze = async () => {
     error.value = /insufficient|balance|funds/i.test(msg)
       ? "Not enough testnet GEN. Use the faucet link to fund your wallet."
       : /reject|denied/i.test(msg) ? "Transaction rejected in wallet."
-      : /TIMEOUT/.test(msg) ? "Still processing on-chain. Hit Refresh in a minute; it will appear in the field log."
+      : /TIMEOUT/.test(msg) ? "Your check is still queued on the testnet. It is not lost: it will appear in the field log once validators finish. Hit Refresh later."
       : "Something went wrong submitting the transaction.";
   } finally {
     analyzing.value = false;
+    pendingTx.value = "";
   }
 };
 

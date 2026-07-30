@@ -64,12 +64,18 @@ export default class ForageSafe {
     });
 
     onStatus("pending", txHash);
-    for (let i = 0; i < 90; i++) {
+    // Bradbury can take anywhere from under a minute to well over ten to reach
+    // consensus, and occasionally a transaction sits unactivated for longer.
+    // Poll for the stored report, but surface the hash immediately so the user
+    // can follow it in the explorer instead of staring at a blocked button.
+    for (let i = 0; i < 150; i++) {
       await new Promise((r) => setTimeout(r, 8000));
       const count = await this.getCount().catch(() => before);
       if (count > before) return txHash;
     }
-    throw new Error("TIMEOUT");
+    const err = new Error("TIMEOUT");
+    err.txHash = txHash;
+    throw err;
   }
 }
 
