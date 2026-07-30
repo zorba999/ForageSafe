@@ -210,15 +210,12 @@ class ForageSafe(gl.Contract):
         def investigate() -> str:
             # -- stage 1: candidate hypotheses from the features ---------
             candidate_prompt = (
-                "A forager describes a wild " + kind + ".\n"
-                "FEATURES: " + features + "\n"
-                "HABITAT: " + habitat + "\n"
-                "REGION: " + location + "\n"
-                "UNVERIFIED USER GUESS (may be wrong, do not trust it): " + species_guess + "\n\n"
-                "From the FEATURES alone, list the most likely species AND the most "
-                "dangerous species that these features could not yet rule out. "
-                "Return ONLY a JSON array of 2 to 4 binomial latin names, most "
-                "likely first. No other text."
+                "Wild " + kind + ". FEATURES: " + features + "\n"
+                "HABITAT: " + habitat + " REGION: " + location + "\n"
+                "Untrusted user guess (may be wrong): " + species_guess + "\n"
+                "From the FEATURES alone, give the single most likely species and "
+                "the single most dangerous species these features cannot rule out. "
+                "Return ONLY a JSON array of exactly 2 binomial latin names."
             )
             names = []
             try:
@@ -226,12 +223,14 @@ class ForageSafe(gl.Contract):
                 rawc = rawc.replace("```json", "").replace("```", "").strip()
                 parsed = json.loads(rawc)
                 if isinstance(parsed, list):
-                    names = [str(n).strip() for n in parsed if str(n).strip()][:3]
+                    names = [str(n).strip() for n in parsed if str(n).strip()][:2]
             except Exception:
                 names = []
 
+            # The guess is only checked if the feature-derived candidates left
+            # room for it, so it can never crowd out the real hypotheses.
             guess = species_guess.strip()
-            if guess and guess.lower() not in [n.lower() for n in names]:
+            if guess and len(names) < 3 and guess.lower() not in [n.lower() for n in names]:
                 names.append(guess)
             names = names[:3]
 
@@ -308,7 +307,7 @@ class ForageSafe(gl.Contract):
                 "AUTHORITATIVE EVIDENCE (GBIF taxonomy and Wikipedia summaries). "
                 "Base your assessment ONLY on this evidence and the observed features. "
                 "Do not use the user's guess as support for itself:\n"
-                + json.dumps(evidence, sort_keys=True)[:6000] + "\n\n"
+                + json.dumps(evidence, sort_keys=True)[:3500] + "\n\n"
                 "Return ONLY minified JSON with these keys:\n"
                 '{"identified_species": string, "confirmed": bool, '
                 '"confidence": "low"|"medium"|"high", '

@@ -67,7 +67,7 @@ decentralized consensus on a subjective, safety-critical verdict.
 |---|---|
 | Network | GenLayer Bradbury testnet (chain id 4221) |
 | RPC | https://rpc-bradbury.genlayer.com |
-| Contract | `0x20Cb2355F8f1a417529FCE96DD9ad086Ed73B832` |
+| Contract | `0xB2A98c1D5eEA0A7F09119152C0712a137153EC43` |
 | Explorer | https://explorer-bradbury.genlayer.com |
 
 ## Tech stack
